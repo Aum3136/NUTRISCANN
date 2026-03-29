@@ -20,6 +20,7 @@ const ai = new GoogleGenAI({
 });
 
 // 🔥 ANALYZE ROUTE
+// 🔥 ANALYZE ROUTE (FINAL FIXED)
 app.post("/analyze", async (req, res) => {
   try {
     const { imageBase64 } = req.body;
@@ -28,14 +29,32 @@ app.post("/analyze", async (req, res) => {
       return res.status(400).json({ error: "No image provided" });
     }
 
-    const base64Data = imageBase64.split(",")[1];
+    // ✅ SAFE BASE64 CLEANING
+    let base64Data = imageBase64;
+
+    if (imageBase64.startsWith("data:")) {
+      const parts = imageBase64.split(",");
+      base64Data = parts[1];
+    }
+
+    // ✅ FORCE MIME TYPE (avoid detection issues)
+    const mimeType = "image/jpeg";
+
+    // ✅ LIMIT SIZE (VERY IMPORTANT)
+    if (base64Data.length > 2_000_000) {
+      return res.status(400).json({
+        error: "Image too large. Please use smaller image.",
+      });
+    }
+
+    console.log("Image size:", base64Data.length);
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
         {
           inlineData: {
-            mimeType: "image/jpeg",
+            mimeType,
             data: base64Data,
           },
         },
@@ -52,8 +71,9 @@ app.post("/analyze", async (req, res) => {
       ],
     });
 
-    // ✅ SAFE TEXT EXTRACTION (FIXED)
-    const text =response?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    // ✅ SAFE TEXT EXTRACTION
+    const text =
+      response?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     console.log("AI RAW:", text);
 
@@ -74,7 +94,7 @@ app.post("/analyze", async (req, res) => {
       });
     }
 
-    // 🔥 SAVE TO DATABASE
+    // ✅ SAVE TO DATABASE
     await Scan.create({
       food: data.food,
       calories: data.calories,
@@ -86,18 +106,16 @@ app.post("/analyze", async (req, res) => {
 
     console.log("Saved to DB ✅");
 
-    // ✅ SEND RESPONSE
     res.json(data);
 
   } catch (error) {
-    console.error(error);
+    console.error("ANALYZE ERROR:", error);
 
     res.status(500).json({
       error: "AI failed",
     });
   }
 });
-
 // 🔥 HISTORY ROUTE
 app.get("/history", async (req, res) => {
   try {
@@ -112,3 +130,78 @@ app.get("/history", async (req, res) => {
 app.listen(5000, () =>
   console.log("Server running on http://localhost:5000 🚀")
 );
+
+app.post("/diet", async (req, res) => {
+  try {
+    const { age, height, weight, goal, type, condition } = req.body;
+
+    const prompt = `
+    Create a personalized diet plan.
+
+    User:
+    Age: ${age}
+    Height: ${height} cm
+    Weight: ${weight} kg
+    Goal: ${goal}
+    Diet Type: ${type}
+    Medical Condition: ${condition || "None"}
+
+    Requirements:
+    - Include breakfast, lunch, snack, dinner
+    - Mention calories
+    - Keep it simple and realistic (Indian diet)
+    
+    Return ONLY JSON:
+    {
+      "calories": "2000 kcal",
+      "plan": [
+        "Breakfast: ...",
+        "Lunch: ...",
+        "Snack: ...",
+        "Dinner: ..."
+      ]
+    }
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash", // 🔥 safer than 2.5
+      contents: [{ text: prompt }],
+    });
+
+    // ✅ FIXED TEXT EXTRACTION
+    const text = response.candidates[0].content.parts[0].text;
+
+    console.log("RAW DIET:", text);
+
+    // ✅ CLEAN JSON
+    const cleaned = text.replace(/```json|```/g, "").trim();
+
+    let data;
+
+    try {
+      data = JSON.parse(cleaned);
+    } catch (err) {
+      console.log("JSON parse failed");
+
+      // fallback (IMPORTANT)
+      return res.json({
+        calories: "2000 kcal",
+        plan: [
+          "Breakfast: Oats + Fruits",
+          "Lunch: Rice + Dal + Salad",
+          "Snack: Nuts",
+          "Dinner: Roti + Vegetables",
+        ],
+      });
+    }
+
+    res.json(data);
+
+  } catch (error) {
+    console.error("DIET ERROR:", error);
+
+    res.status(500).json({
+      error: "Diet generation failed",
+    });
+  }
+});

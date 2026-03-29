@@ -1,153 +1,121 @@
-    import { useState } from "react";
-    import { motion } from "framer-motion";
+import { useState } from "react";
 import axios from "axios";
-    const Diet = () => {
-    const [form, setForm] = useState({
-        age: "",
-        height: "",
-        weight: "",
-        goal: "",
-        type: "",
-        condition: "",
-    });
+import { motion } from "framer-motion";
 
-    const [plan, setPlan] = useState<string[]>([]);
-    const [calories, setCalories] = useState<number | null>(null);
-    const [loading, setLoading] = useState(false);
+const Diet = () => {
+  const [form, setForm] = useState({
+    age: "",
+    height: "",
+    weight: "",
+    goal: "",
+    type: "",
+    condition: "",
+  });
 
-    const handleChange = (e: any) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+  const [plan, setPlan] = useState<string[]>([]);
+  const [calories, setCalories] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-    // 🔥 SIMPLE CALORIE CALCULATION (BMR approx)
-    const calculateCalories = () => {
-        const weight = Number(form.weight);
-        const height = Number(form.height);
-        const age = Number(form.age);
+  const handleChange = (e: any) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-        let bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-
-        if (form.goal === "loss") bmr -= 400;
-        if (form.goal === "gain") bmr += 400;
-
-        return Math.round(bmr);
-    };
-
-    const generatePlan = async () => {
+  const generatePlan = async () => {
     setLoading(true);
 
     try {
-        const res = await axios.post("http://localhost:5000/diet", form);
+      const res = await axios.post("http://localhost:5000/diet", form);
 
-        setPlan(res.data.plan);
-        setCalories(res.data.calories);
-
+      setPlan(res.data.plan);
+      setCalories(res.data.calories);
     } catch (error) {
-        console.error(error);
+      console.error(error);
+      alert("Failed to generate plan");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
-    return (
-        <div className="min-h-screen text-white p-6">
+  };
 
-        <h1 className="text-4xl font-heading text-center mb-6">
-            🧠 Smart Diet Planner
+  return (
+    <div className="min-h-screen text-white p-6">
+
+      <div className="max-w-4xl mx-auto">
+
+        {/* HEADER */}
+        <h1 className="text-4xl font-heading mb-2">
+          🧠 Smart Diet Planner
         </h1>
+        <p className="text-gray-400 mb-8">
+          Get personalized AI-based meal plans tailored to your body & goals
+        </p>
 
-        {/* FORM */}
-        <div className="max-w-xl mx-auto bg-white/10 p-6 rounded-xl space-y-4">
+        {/* FORM CARD */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-5">
 
-            <input
-            type="number"
-            name="age"
-            placeholder="Age"
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-black/30"
-            />
+          {/* BASIC INFO */}
+          <div className="grid grid-cols-3 gap-4">
+            <input name="age" placeholder="Age" onChange={handleChange} className="input" />
+            <input name="height" placeholder="Height (cm)" onChange={handleChange} className="input" />
+            <input name="weight" placeholder="Weight (kg)" onChange={handleChange} className="input" />
+          </div>
 
-            <input
-            type="number"
-            name="height"
-            placeholder="Height (cm)"
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-black/30"
-            />
-
-            <input
-            type="number"
-            name="weight"
-            placeholder="Weight (kg)"
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-black/30"
-            />
-
-            {/* GOAL */}
-            <select
-            name="goal"
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-black/30"
-            >
+          {/* GOAL */}
+          <select name="goal" onChange={handleChange} className="input">
             <option value="">Select Goal</option>
             <option value="loss">Weight Loss</option>
             <option value="gain">Muscle Gain</option>
             <option value="maintain">Maintain</option>
-            </select>
+          </select>
 
-            {/* DIET TYPE */}
-            <select
-            name="type"
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-black/30"
-            >
+          {/* DIET TYPE */}
+          <select name="type" onChange={handleChange} className="input">
             <option value="">Diet Type</option>
             <option value="veg">Vegetarian</option>
             <option value="nonveg">Non-Vegetarian</option>
-            </select>
+          </select>
 
-            <input
-            type="text"
+          {/* CONDITION */}
+          <input
             name="condition"
             placeholder="Medical condition (optional)"
             onChange={handleChange}
-            className="w-full p-2 rounded bg-black/30"
-            />
+            className="input"
+          />
 
-            <button
-  onClick={generatePlan}
-  disabled={loading}
-  className={`w-full py-2 rounded-lg ${
-    loading
-      ? "bg-gray-500 cursor-not-allowed"
-      : "bg-green-500 hover:bg-green-600"
-  }`}
->
-  {loading ? "Generating..." : "Generate Diet Plan"}
-</button>
+          {/* BUTTON */}
+          <button
+            onClick={generatePlan}
+            className="w-full bg-green-500 py-3 rounded-xl font-medium hover:bg-green-600 transition"
+          >
+            {loading ? "Generating..." : "Generate Diet Plan"}
+          </button>
         </div>
 
         {/* RESULT */}
         {plan.length > 0 && (
-            <motion.div
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-8 max-w-xl mx-auto bg-white/10 p-6 rounded-xl"
-            >
-            <h2 className="text-xl font-semibold mb-3">
-                🔥 Daily Calories: {calories} kcal
+            className="mt-8 bg-white/10 p-6 rounded-2xl border border-white/10"
+          >
+
+            <h2 className="text-xl font-semibold mb-4">
+              🔥 Daily Calories: {calories}
             </h2>
 
-            <ul className="space-y-2">
-                {plan.map((item, i) => (
-                <li key={i} className="bg-white/5 p-3 rounded">
-                    {item}
-                </li>
-                ))}
-            </ul>
-            </motion.div>
-        )}
-        </div>
-    );
-    };
+            <div className="space-y-3">
+              {plan.map((item, i) => (
+                <div key={i} className="bg-white/5 p-3 rounded-lg">
+                  {item}
+                </div>
+              ))}
+            </div>
 
-    export default Diet;
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Diet;

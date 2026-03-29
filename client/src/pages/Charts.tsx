@@ -37,6 +37,7 @@ const Charts = () => {
 protein: parseInt(item.protein),
 carbs: parseInt(item.carbs),
 fat: parseInt(item.fat),
+
         }));
 
         setData(formatted);
