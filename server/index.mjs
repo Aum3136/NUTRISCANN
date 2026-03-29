@@ -3,9 +3,15 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 
+import connectDB from "./db.js";
+import Scan from "./models/Scan.js";
+
 dotenv.config();
+connectDB();
 
 const app = express();
+
+// ✅ middleware
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
@@ -13,13 +19,19 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
+// 🔥 ANALYZE ROUTE
 app.post("/analyze", async (req, res) => {
   try {
     const { imageBase64 } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: "No image provided" });
+    }
+
     const base64Data = imageBase64.split(",")[1];
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // ✅ WORKING MODEL
+      model: "gemini-2.5-flash",
       contents: [
         {
           inlineData: {
@@ -40,68 +52,63 @@ app.post("/analyze", async (req, res) => {
       ],
     });
 
-   let text = response.text;
+    // ✅ SAFE TEXT EXTRACTION (FIXED)
+    const text =response?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-// Clean markdown (```json ... ```)
-text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    console.log("AI RAW:", text);
 
-const parsed = JSON.parse(text);
+    let data;
 
-res.json(parsed);
+    try {
+      const cleaned = text.replace(/```json|```/g, "").trim();
+      data = JSON.parse(cleaned);
+    } catch (err) {
+      console.log("Parsing failed:", text);
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error analyzing image");
-  }
-});
-
-
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// 🔥 DIET PLAN ROUTE
-app.post("/diet", async (req, res) => {
-  try {
-    const { age, height, weight, goal, type, condition } = req.body;
-
-    const prompt = `
-    Create a personalized daily diet plan.
-
-    User details:
-    Age: ${age}
-    Height: ${height} cm
-    Weight: ${weight} kg
-    Goal: ${goal}
-    Diet Type: ${type}
-    Medical Condition: ${condition || "None"}
-
-    Requirements:
-    - Include breakfast, lunch, snack, dinner
-    - Mention calories approx
-    - Keep it simple and practical
-    - Avoid harmful food for medical condition
-    - Format in JSON:
-    {
-      "calories": "",
-      "plan": ["", "", "", ""]
+      return res.json({
+        food: "Could not analyze",
+        calories: "-",
+        protein: "-",
+        carbs: "-",
+        fat: "-",
+      });
     }
-    `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    // 🔥 SAVE TO DATABASE
+    await Scan.create({
+      food: data.food,
+      calories: data.calories,
+      protein: data.protein,
+      carbs: data.carbs,
+      fat: data.fat,
+      image: imageBase64,
+    });
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    console.log("Saved to DB ✅");
 
-    // 🔥 Convert string → JSON
-    const cleaned = text.replace(/```json|```/g, "").trim();
-    const data = JSON.parse(cleaned);
-
+    // ✅ SEND RESPONSE
     res.json(data);
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "AI generation failed" });
+
+    res.status(500).json({
+      error: "AI failed",
+    });
   }
 });
-app.listen(5000, () => console.log("Server running on 5000 🚀"));
+
+// 🔥 HISTORY ROUTE
+app.get("/history", async (req, res) => {
+  try {
+    const scans = await Scan.find().sort({ createdAt: -1 });
+    res.json(scans);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch history" });
+  }
+});
+
+// 🚀 START SERVER
+app.listen(5000, () =>
+  console.log("Server running on http://localhost:5000 🚀")
+);
