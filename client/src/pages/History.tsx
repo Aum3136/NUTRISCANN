@@ -32,14 +32,33 @@ const History = () => {
     fetchHistory();
   }, []);
 
-  return (
-    <div className="min-h-screen p-6 text-white">
+  // 🔥 DELETE FUNCTION (FIXED POSITION)
+  const handleDelete = async (id: string) => {
+    const confirmDelete = confirm("Delete this entry?");
+    if (!confirmDelete) return;
 
-      {/* HEADER */}
+    try {
+      await axios.delete(`http://localhost:5000/delete/${id}`);
+
+      // remove from UI instantly
+      setScans((prev) => prev.filter((item) => item._id !== id));
+
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-black text-white p-6">
+
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-heading font-semibold mb-2">
+
+        {/* HEADER */}
+        <h1 className="text-4xl font-semibold mb-2">
           📜 Scan History
         </h1>
+
         <p className="text-gray-400 mb-8">
           Track your meals and nutrition insights over time
         </p>
@@ -62,6 +81,7 @@ const History = () => {
 
         {/* 🔥 HISTORY GRID */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
           {scans.map((scan) => (
             <motion.div
               key={scan._id}
@@ -79,7 +99,6 @@ const History = () => {
                   className="w-full h-44 object-cover"
                 />
 
-                {/* DATE (optional) */}
                 {scan.createdAt && (
                   <span className="absolute top-2 right-2 text-xs bg-black/60 px-2 py-1 rounded">
                     {new Date(scan.createdAt).toLocaleDateString()}
@@ -95,8 +114,8 @@ const History = () => {
                   {scan.food}
                 </h2>
 
-                {/* NUTRITION GRID */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                {/* NUTRITION */}
+                <div className="grid grid-cols-2 gap-3 text-sm mb-4">
 
                   <div className="bg-white/5 p-2 rounded-lg">
                     🔥 {scan.calories} kcal
@@ -115,9 +134,19 @@ const History = () => {
                   </div>
 
                 </div>
+
+                {/* 🔥 DELETE BUTTON */}
+                <button
+                  onClick={() => handleDelete(scan._id)}
+                  className="w-full bg-red-500/20 text-red-400 py-2 rounded-xl hover:bg-red-500/30 transition"
+                >
+                  🗑 Delete
+                </button>
+
               </div>
             </motion.div>
           ))}
+
         </div>
       </div>
     </div>

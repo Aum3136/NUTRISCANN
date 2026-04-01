@@ -1,3 +1,4 @@
+<div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-black text-white"></div>
 import { useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -50,7 +51,7 @@ const Diet = () => {
         </p>
 
         {/* FORM CARD */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-5">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl hover:shadow-green-500/10 transition-all backdrop-blur-xl border border-white/10 p-6 rounded-2xl space-y-5">
 
           {/* BASIC INFO */}
           <div className="grid grid-cols-3 gap-4">

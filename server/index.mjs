@@ -126,6 +126,21 @@ app.get("/history", async (req, res) => {
   }
 });
 
+// 🔥 DELETE ROUTE
+app.delete("/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Scan.findByIdAndDelete(id);
+
+    res.json({ message: "Deleted successfully ✅" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
 // 🚀 START SERVER
 app.listen(5000, () =>
   console.log("Server running on http://localhost:5000 🚀")
@@ -205,3 +220,31 @@ app.post("/diet", async (req, res) => {
     });
   }
 });
+
+
+app.post("/manual", async (req, res) => {
+  try {
+    const { food, calories, protein, carbs, fat, meal } = req.body;
+
+    if (!food) {
+      return res.status(400).json({ error: "Food name required" });
+    }
+
+    const newEntry = await Scan.create({
+      food,
+      calories,
+      protein,
+      carbs,
+      fat,
+      meal: meal || "Other",
+      image: "", // no image
+    });
+
+    res.json(newEntry);
+
+  } catch (error) {
+    console.error("MANUAL ERROR:", error);
+    res.status(500).json({ error: "Failed to add food" });
+  }
+});
+

@@ -4,6 +4,8 @@ import Upload from "./pages/Upload";
 import History from "./pages/History";
 import Diet from "./pages/Diet";
 import Charts from "./pages/Charts";
+import ManualEntry from "./pages/ManualEntry";
+
 
 function App() {
   return (
@@ -14,6 +16,7 @@ function App() {
           <Route path="/history" element={<History />} />
           <Route path="/diet" element={<Diet />} />
           <Route path="/charts" element={<Charts />} />
+          <Route path="/manual" element={<ManualEntry />} />
         </Routes>
       </Layout>
     </Router>

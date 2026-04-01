@@ -1,7 +1,9 @@
+<div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-black text-white"></div>
 import { useState, useRef } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import Hero from "../components/Hero";
+import { useNavigate } from "react-router-dom";
 
 interface NutritionResult {
   food: string;
@@ -20,6 +22,8 @@ const Upload = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const navigate = useNavigate();
 
   // 📁 FILE UPLOAD
   const handleImageChange = (file: File | null) => {
@@ -142,6 +146,13 @@ const Upload = () => {
               />
             </label>
           </div>
+          <button
+          
+  onClick={() => navigate("/manual")}
+  className="bg-blue-500 px-4 py-2 rounded-lg"
+>
+  Manual Entry
+</button>
 
           {/* 🎥 CAMERA VIEW */}
           {cameraOn && (
@@ -166,14 +177,13 @@ const Upload = () => {
 
           {/* PREVIEW */}
           {preview && (
-            <motion.img
-              src={preview}
-              alt="preview"
-              className="w-full h-44 object-cover rounded-lg mb-4 border border-white/10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            />
-          )}
+  <motion.img
+    src={preview}
+    alt="preview"
+    className="w-full h-44 object-cover rounded-xl mb-4 
+    border border-white/10 shadow-lg hover:scale-[1.02] transition"
+  />
+)}
 
           {/* ANALYZE BUTTON */}
           {preview && (
@@ -189,8 +199,7 @@ const Upload = () => {
               {loading ? "Analyzing..." : "Analyze"}
             </button>
           )}
-
-          {/* RESULT */}
+{/* RESULT */}
           {result && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -207,20 +216,49 @@ const Upload = () => {
                 <li>• Suitable for daily intake</li>
               </ul>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-white/5 p-2 rounded-lg">
-                  🔥 {result.calories}
-                </div>
-                <div className="bg-white/5 p-2 rounded-lg">
-                  💪 {result.protein}
-                </div>
-                <div className="bg-white/5 p-2 rounded-lg">
-                  🍞 {result.carbs}
-                </div>
-                <div className="bg-white/5 p-2 rounded-lg">
-                  🥑 {result.fat}
-                </div>
-              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
+
+  <div className="bg-white/5 p-3 rounded-lg">
+    <p className="text-gray-400 text-xs">🔥 Calories</p>
+    <p className="text-lg font-semibold text-white">
+      {result.calories} kcal
+    </p>
+    <p className="text-[10px] text-gray-500">
+      Energy source for body
+    </p>
+  </div>
+
+  <div className="bg-white/5 p-3 rounded-lg">
+    <p className="text-gray-400 text-xs">💪 Protein</p>
+    <p className="text-lg font-semibold text-white">
+      {result.protein} g
+    </p>
+    <p className="text-[10px] text-gray-500">
+      Builds muscles
+    </p>
+  </div>
+
+  <div className="bg-white/5 p-3 rounded-lg">
+    <p className="text-gray-400 text-xs">🍞 Carbs</p>
+    <p className="text-lg font-semibold text-white">
+      {result.carbs} g
+    </p>
+    <p className="text-[10px] text-gray-500">
+      Provides energy
+    </p>
+  </div>
+
+  <div className="bg-white/5 p-3 rounded-lg">
+    <p className="text-gray-400 text-xs">🥑 Fats</p>
+    <p className="text-lg font-semibold text-white">
+      {result.fat} g
+    </p>
+    <p className="text-[10px] text-gray-500">
+      Supports body functions
+    </p>
+  </div>
+
+</div>
             </motion.div>
           )}
 
@@ -229,5 +267,6 @@ const Upload = () => {
     </div>
   );
 };
+
 
 export default Upload;
