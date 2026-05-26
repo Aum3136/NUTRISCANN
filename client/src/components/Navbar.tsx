@@ -1,8 +1,11 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { name: "Home", path: "/", icon: "🏠" },
@@ -11,9 +14,13 @@ const Navbar = () => {
     { name: "Charts", path: "/charts", icon: "📊" },
   ];
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/auth");
+  };
+
   return (
     <div className="fixed top-0 left-0 w-full z-50 bg-black/40 backdrop-blur-lg border-b border-white/10">
-
       <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-3">
 
         {/* 🔥 LOGO */}
@@ -27,10 +34,8 @@ const Navbar = () => {
 
         {/* 🔥 NAV LINKS */}
         <div className="flex items-center gap-3">
-
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
-
             return (
               <Link key={item.path} to={item.path}>
                 <motion.div
@@ -48,17 +53,37 @@ const Navbar = () => {
               </Link>
             );
           })}
-
         </div>
 
-        {/* 🔥 RIGHT SIDE (SETTINGS / PROFILE PLACEHOLDER) */}
-        <motion.div
-          whileHover={{ rotate: 20 }}
-          className="text-gray-400 cursor-pointer hover:text-white transition"
-        >
-          ⚙️
-        </motion.div>
+        {/* 🔥 RIGHT SIDE */}
+        <div className="flex items-center gap-3">
 
+          {/* User email */}
+          {user && (
+            <span className="text-xs text-gray-400 hidden sm:block">
+              {user.email}
+            </span>
+          )}
+
+          {/* Logout button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-white hover:bg-red-500/20 transition-all duration-300"
+          >
+            🚪 Logout
+          </motion.button>
+
+          {/* Settings */}
+          <motion.div
+            whileHover={{ rotate: 20 }}
+            className="text-gray-400 cursor-pointer hover:text-white transition"
+          >
+            ⚙️
+          </motion.div>
+
+        </div>
       </div>
     </div>
   );
