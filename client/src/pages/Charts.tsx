@@ -1,6 +1,3 @@
-
-
-<div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-black text-white"></div>
 import { useEffect, useState } from "react";
 
 import axios from "axios";
@@ -141,12 +138,11 @@ const Charts = () => {
   const COLORS = ["#22c55e", "#3b82f6", "#f97316"];
 
   return (
-    
-    <div className="min-h-screen text-white p-6">
+    <div className="py-8 min-h-screen text-[#1a2e1a]">
       <div className="max-w-6xl mx-auto">
 
         {/* TITLE */}
-        <h1 className="text-4xl mb-6">
+        <h1 className="text-4xl mb-6 font-black text-[#1a2e1a]" style={{ fontFamily: "'Georgia', serif" }}>
           📊 Nutrition Analytics
         </h1>
 
@@ -157,7 +153,7 @@ const Charts = () => {
           <select
             value={selectedMeal}
             onChange={(e) => setSelectedMeal(e.target.value)}
-            className="bg-white/10 px-4 py-2 rounded-lg border border-white/20"
+            className="bg-white px-4 py-2 rounded-lg border border-gray-200 text-[#1a2e1a] shadow-sm outline-none focus:border-green-400 transition"
           >
             <option value="all">All Meals</option>
             {meals.map((meal, i) => (
@@ -172,10 +168,10 @@ const Charts = () => {
             <button
               key={m}
               onClick={() => setMode(m as Mode)}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-4 py-2 rounded-lg font-semibold transition shadow-sm ${
                 mode === m
-                  ? "bg-green-500"
-                  : "bg-white/10"
+                  ? "bg-green-500 text-white"
+                  : "bg-white border border-gray-200 text-gray-600 hover:text-green-600 hover:border-green-300"
               }`}
             >
               {m.toUpperCase()}
@@ -184,21 +180,21 @@ const Charts = () => {
         </div>
 
         {/* LABEL */}
-        <p className="text-green-400 mb-4">
+        <p className="text-green-600 mb-4 font-semibold">
           Showing: {selectedMeal} | Mode: {mode}
         </p>
 
         {/* LINE CHART */}
-        <div className="bg-white/10 p-6 rounded-2xl mb-8">
-          <h2 className="mb-4 text-lg font-semibold">
+        <div className="bg-white border border-green-100 p-6 rounded-2xl mb-8 shadow-sm">
+          <h2 className="mb-4 text-lg font-bold text-[#1a2e1a]">
             Calories Trend
           </h2>
 
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
-              <CartesianGrid stroke="#444" />
-              <XAxis dataKey="name" stroke="#ccc" />
-              <YAxis stroke="#ccc" />
+              <CartesianGrid stroke="#f0f0f0" />
+              <XAxis dataKey="name" stroke="#888888" />
+              <YAxis stroke="#888888" />
               <Tooltip />
               <Line
                 type="monotone"
@@ -211,8 +207,8 @@ const Charts = () => {
         </div>
 
         {/* PIE CHART */}
-        <div className="bg-white/10 p-6 rounded-2xl">
-          <h2 className="mb-4 text-lg font-semibold">
+        <div className="bg-white border border-green-100 p-6 rounded-2xl shadow-sm">
+          <h2 className="mb-4 text-lg font-bold text-[#1a2e1a]">
             Macronutrient Distribution
           </h2>
 

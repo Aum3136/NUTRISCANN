@@ -7,6 +7,7 @@ import connectDB from "./db.js";
 import Scan from "./models/Scan.js";
 
 dotenv.config();
+delete process.env.GOOGLE_API_KEY; // Prevent system-wide GOOGLE_API_KEY from overriding GEMINI_API_KEY
 connectDB();
 
 const app = express();
