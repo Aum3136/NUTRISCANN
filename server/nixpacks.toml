@@ -1,0 +1,9 @@
+[
+phases.install
+]
+cmds = ["npm install"]
+
+[
+start
+]
+cmd = "node index.mjs"
